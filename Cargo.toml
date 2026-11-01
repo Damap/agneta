@@ -1,0 +1,54 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/agneta-core",
+    "crates/agneta-lob",
+    "crates/agneta-analytics",
+    "crates/agneta-econometrics",
+    "crates/agneta-ctp-sys",
+    "crates/agneta-ingest",
+    "crates/agneta-pybridge",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.80"
+license = "MIT OR Apache-2.0"
+description = "Behavioral Microstructure, Crowd Cascade & Econometric Engine for Chinese Financial Markets."
+
+[workspace.dependencies]
+agneta-core = { path = "crates/agneta-core" }
+agneta-lob = { path = "crates/agneta-lob" }
+agneta-analytics = { path = "crates/agneta-analytics" }
+agneta-econometrics = { path = "crates/agneta-econometrics" }
+agneta-ctp-sys = { path = "crates/agneta-ctp-sys" }
+agneta-ingest = { path = "crates/agneta-ingest" }
+encoding_rs = { version = "0.8.34", default-features = false }
+criterion = { version = "0.5.1", default-features = false }
+
+[workspace.lints.rust]
+unsafe_code = "deny"
+missing_docs = "warn"
+unused_must_use = "deny"
+
+[workspace.lints.clippy]
+float_arithmetic = "deny"
+float_cmp = "deny"
+cast_possible_truncation = "deny"
+cast_sign_loss = "deny"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = "symbols"
+overflow-checks = false
+
+[profile.bench]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+debug = true
+overflow-checks = false

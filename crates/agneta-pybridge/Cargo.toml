@@ -1,0 +1,14 @@
+[package]
+name = "agneta-pybridge"
+version.workspace = true
+edition.workspace = true
+[lib]
+name = "agneta_rs"
+crate-type = ["cdylib", "rlib"]
+[dependencies]
+agneta-core = { workspace = true }
+agneta-lob = { workspace = true }
+agneta-analytics = { workspace = true }
+agneta-econometrics = { workspace = true }
+[lints]
+workspace = true

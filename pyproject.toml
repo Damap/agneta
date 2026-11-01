@@ -1,0 +1,24 @@
+[build-system]
+requires = ["maturin>=1.7,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "agneta-lab"
+version = "0.1.0"
+description = "Python Research Laboratory for Project Agneta (NLP, Causal RDD, ST-GNN, Quantum Econophysics)"
+requires-python = ">=3.11"
+dependencies = [
+    "polars>=1.0.0",
+    "pyarrow>=17.0.0",
+    "numpy>=2.0.0",
+    "scipy>=1.14.0",
+    "statsmodels>=0.14.0",
+    "torch>=2.4.0",
+    "transformers>=4.44.0",
+    "pennylane>=0.38.0",
+]
+
+[tool.maturin]
+manifest-path = "crates/agneta-pybridge/Cargo.toml"
+python-source = "python"
+module-name = "agneta_lab._agneta_rs"

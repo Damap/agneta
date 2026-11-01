@@ -1,0 +1,9 @@
+[package]
+name = "agneta-analytics"
+version.workspace = true
+edition.workspace = true
+[dependencies]
+agneta-core = { workspace = true }
+agneta-lob = { workspace = true }
+[lints]
+workspace = true

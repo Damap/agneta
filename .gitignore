@@ -1,0 +1,256 @@
+# ==============================================================================
+# 1. RUST, CARGO & PROFILAGE BAS NIVEAU
+# ==============================================================================
+/target/
+**/*.rs.bk
+*.pdb
+
+# Note académique : On conserve Cargo.lock dans Git pour garantir la
+# reproductibilité bit-à-bit des benchmarks et des résultats de thèse.
+# Décommenter uniquement si publié comme pure bibliothèque :
+# Cargo.lock
+
+# Rapports Criterion, Flamegraphs et profilage matériel Linux (perf)
+perf.data
+perf.data.old
+flamegraph.svg
+flamegraph-*.svg
+callgrind.out.*
+cachegrind.out.*
+dhat-heap.json
+
+# ==============================================================================
+# 2. API CTP (SFIT) & ARTÉFACTS FFI C/C++
+# ==============================================================================
+# L'API C++ CTP génère automatiquement des fichiers binaires de session (.con)
+# et des logs lors de la connexion à SimNow ou aux courtiers chinois.
+*.con
+**/flow/
+**/ctp_flow/
+ThostFtdc*.log
+ctp_*.log
+
+# Objets compilés C/C++ intermédiaires
+*.o
+*.obj
+*.a
+*.lib
+*.exp
+
+# Ignorer les binaires partagés générés, SAUF les bibliothèques officielles CTP
+# placées volontairement dans crates/agneta-ctp-sys/lib/
+*.so
+*.dylib
+*.dll
+!crates/agneta-ctp-sys/lib/*.so
+!crates/agneta-ctp-sys/lib/*.dll
+!crates/agneta-ctp-sys/lib/*.dylib
+
+# ==============================================================================
+# 3. PYTHON, MATURIN (PyO3) & ENVIRONNEMENTS VIRTUELS
+# ==============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so.dSYM/
+
+# Environnements virtuels et gestionnaires (uv, venv, conda)
+.venv/
+venv/
+ENV/
+env/
+.uv/
+.python-version
+
+# Artefacts de build Maturin / Setuptools / Wheel
+/build/
+/dist/
+/wheels/
+*.egg-info/
+.eggs/
+*.egg
+*.manifest
+*.spec
+
+# Caches de tests, de typage et de linters Python
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.dmypy.json
+.coverage
+htmlcov/
+
+# Jupyter Notebooks (Laboratoire de recherche)
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# ==============================================================================
+# 4. MODÈLES IA, NLP (FinBERT / LLMs) & EXPÉRIMENTATIONS QUANTUM
+# ==============================================================================
+# Poids de réseaux de neurones et checkpoints (PyTorch, Safetensors, ONNX)
+*.pt
+*.pth
+*.ckpt
+*.bin
+*.safetensors
+*.onnx
+*.tflite
+*.gguf
+
+# Caches HuggingFace, WandB, TensorBoard et Optuna
+.cache/
+huggingface_cache/
+wandb/
+runs/
+lightning_logs/
+mlruns/
+optuna.db
+
+# ==============================================================================
+# 5. DONNÉES DE MARCHÉ (CSMAR / WIND L2-L3) & SCRAPING RÉSEAUX SOCIAUX
+# ==============================================================================
+# CRITIQUE : Les données Level-2 / Level-3 (逐笔) CSMAR et Wind sont sous licence
+# stricte et volumineuses. Ne jamais les pousser sur un dépôt Git public.
+/data/
+/datasets/
+/dumps/
+/raw_data/
+/market_data/
+/social_logs/
+
+# Formats de stockage analytique et séries temporelles
+*.parquet
+*.arrow
+*.feather
+*.ipc
+*.fst
+*.h5
+*.hdf5
+*.nc
+*.zarr
+
+# Fichiers tabulaires et archives de ticks / logs NLP (Guba, Taoguba, Xueqiu)
+*.csv
+*.tsv
+*.jsonl
+*.ndjson
+*.pcap
+*.pcapng
+*.zst
+*.lz4
+*.gz
+*.bz2
+*.xz
+*.7z
+*.zip
+
+# Bases de données locales (DuckDB, SQLite, RocksDB)
+*.db
+*.sqlite
+*.sqlite3
+*.duckdb
+*.duckdb.wal
+
+# Exception : autoriser d'éventuels petits fichiers d'exemple synthétiques pour les tests
+!tests/fixtures/**
+
+# ==============================================================================
+# 6. SECRETS, IDENTIFIANTS SIMNOW / COURTIERS & COOKIES DE SCRAPING
+# ==============================================================================
+.env
+.env.*
+!.env.example
+
+# Identifiants CTP / SimNow (BrokerID, UserID, AppID, AuthCode)
+*credentials*.toml
+*credentials*.json
+*secret*.toml
+simnow_config.toml
+ctp_config.toml
+
+# Cookies et jetons d'authentification des scrapers sociaux (Xueqiu, EastMoney)
+cookies.json
+cookies.txt
+*.session
+*.pem
+*.key
+
+# ==============================================================================
+# 7. PAPIERS ACADÉMIQUES & COMPILATION LATEX (papers/ & docs/)
+# ==============================================================================
+*.aux
+*.lof
+*.lot
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.cb
+*.cb2
+.*.lb
+*.dvi
+*.xdv
+*-converted-to.*
+*.bbl
+*.bcf
+*.blg
+*-blx.aux
+*-blx.bib
+*.run.xml
+*.fdb_latexmk
+*.synctex
+*.synctex(busy)
+*.synctex.gz
+*.synctex.gz(busy)
+*.pdfsync
+*.nav
+*.pre
+*.snm
+*.vrb
+*.acn
+*.acr
+*.alg
+*.glg
+*.glo
+*.gls
+*.glsdefs
+*.lzo
+*.lzs
+*.slg
+*.slo
+*.sls
+_minted*
+*.pyg
+
+# ==============================================================================
+# 8. IDE (VSCode, RustRover, CLion, Cursor, Vim) & SYSTÈME D'EXPLOITATION
+# ==============================================================================
+# JetBrains (RustRover / CLion / PyCharm)
+.idea/
+*.iml
+*.iws
+*.ipr
+cmake-build-*/
+
+# VSCode / Cursor (on ignore tout sauf les recommandations d'extensions partagées)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Vim / Neovim
+*.swp
+*.swo
+*~
+Session.vim
+
+# OS (Linux, macOS, Windows)
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini

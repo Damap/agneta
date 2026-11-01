@@ -1,0 +1,9 @@
+[package]
+name = "agneta-econometrics"
+version.workspace = true
+edition.workspace = true
+[dependencies]
+agneta-core = { workspace = true }
+agneta-analytics = { workspace = true }
+[lints]
+workspace = true

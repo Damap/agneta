@@ -1,0 +1,12 @@
+[package]
+name = "agneta-ingest"
+version.workspace = true
+edition.workspace = true
+[dependencies]
+agneta-core = { workspace = true }
+agneta-lob = { workspace = true }
+agneta-analytics = { workspace = true }
+agneta-ctp-sys = { workspace = true }
+encoding_rs = { workspace = true }
+[lints]
+workspace = true

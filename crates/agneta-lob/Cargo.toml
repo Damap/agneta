@@ -1,0 +1,8 @@
+[package]
+name = "agneta-lob"
+version.workspace = true
+edition.workspace = true
+[dependencies]
+agneta-core = { workspace = true }
+[lints]
+workspace = true
