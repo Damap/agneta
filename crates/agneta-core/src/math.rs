@@ -1,0 +1,140 @@
+use core::ops::{Add, AddAssign, Sub, SubAssign};
+use crate::types::{FixedPrice, Volume};
+
+#[repr(transparent)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct FixedQ32_32(pub i64);
+
+impl FixedQ32_32 {
+    pub const FRAC_BITS: u32 = 32;
+    pub const ONE: Self = Self(1_i64 << Self::FRAC_BITS);
+    pub const HALF: Self = Self(1_i64 << (Self::FRAC_BITS - 1));
+    pub const ZERO: Self = Self(0);
+
+    #[inline(always)]
+    pub const fn from_raw(raw: i64) -> Self {
+        Self(raw)
+    }
+    #[inline(always)]
+    pub const fn from_int(val: i32) -> Self {
+        Self((val as i64) << Self::FRAC_BITS)
+    }
+
+    #[inline(always)]
+    #[allow(clippy::cast_possible_truncation)]
+    pub const fn from_bps(bps: i64) -> Self {
+        let num = (bps as i128) << Self::FRAC_BITS;
+        Self((num / 10_000) as i64)
+    }
+
+    #[inline(always)]
+    pub const fn to_int(self) -> i64 {
+        self.0 >> Self::FRAC_BITS
+    }
+
+    #[inline(always)]
+    #[allow(clippy::cast_possible_truncation)]
+    pub const fn to_bps(self) -> i64 {
+        let prod = (self.0 as i128) * 10_000;
+        (prod >> Self::FRAC_BITS) as i64
+    }
+
+    #[inline(always)]
+    #[allow(clippy::cast_possible_truncation)]
+    pub const fn mul(self, rhs: Self) -> Self {
+        let prod = (self.0 as i128) * (rhs.0 as i128);
+        Self((prod >> Self::FRAC_BITS) as i64)
+    }
+
+    #[inline(always)]
+    #[allow(clippy::cast_possible_truncation)]
+    pub const fn checked_div(self, rhs: Self) -> Self {
+        if rhs.0 == 0 {
+            return Self::ZERO;
+        }
+        let num = (self.0 as i128) << Self::FRAC_BITS;
+        Self((num / (rhs.0 as i128)) as i64)
+    }
+
+    #[inline(always)]
+    pub const fn exp_neg(self) -> Self {
+        if self.0 <= 0 {
+            return Self::ONE;
+        }
+        // Au-delà de x = 22.0, exp(-x) < 2.8e-10, soit ~1 bit en Q32.32
+        if self.0 >= (22_i64 << Self::FRAC_BITS) {
+            return Self::ZERO;
+        }
+
+        // Constante ln(2) en Q32.32 : round(0.6931471805599453 * 2^32) = 2_977_044_472
+        const LN2_Q32: i64 = 2_977_044_472;
+
+        // k = floor(x / ln(2)) et reste r = x - k * ln(2) avec r dans [0, ln(2)[
+        let k = self.0 / LN2_Q32;
+        let r = Self(self.0 - k * LN2_Q32);
+
+        // Évaluation de Padé (2,2) sur r : (12 - 6r + r^2) / (12 + 6r + r^2)
+        let r2 = r.mul(r);
+        let six_r = Self(r.0 * 6);
+        let twelve = Self::from_int(12);
+
+        let num = Self(twelve.0 - six_r.0 + r2.0);
+        let den = Self(twelve.0 + six_r.0 + r2.0);
+        let exp_r = num.checked_div(den);
+
+        // Division par 2^k via un simple décalage binaire à droite
+        Self(exp_r.0 >> k)
+    }
+}
+
+impl Add for FixedQ32_32 {
+    type Output = Self;
+    #[inline(always)]
+    fn add(self, rhs: Self) -> Self::Output {
+        Self(self.0 + rhs.0)
+    }
+}
+
+impl AddAssign for FixedQ32_32 {
+    #[inline(always)]
+    fn add_assign(&mut self, rhs: Self) {
+        self.0 += rhs.0;
+    }
+}
+
+impl Sub for FixedQ32_32 {
+    type Output = Self;
+    #[inline(always)]
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self(self.0 - rhs.0)
+    }
+}
+
+impl SubAssign for FixedQ32_32 {
+    #[inline(always)]
+    fn sub_assign(&mut self, rhs: Self) {
+        self.0 -= rhs.0;
+    }
+}
+
+#[inline(always)]
+#[allow(clippy::cast_possible_truncation)]
+pub const fn compute_weighted_micro_price(
+    bid_price: FixedPrice,
+    bid_vol: Volume,
+    ask_price: FixedPrice,
+    ask_vol: Volume,
+) -> FixedPrice {
+    let pb = bid_price.0 as i128;
+    let vb = bid_vol.0 as i128;
+    let pa = ask_price.0 as i128;
+    let va = ask_vol.0 as i128;
+
+    let total_vol = va + vb;
+    if total_vol <= 0 {
+        return FixedPrice::ZERO;
+    }
+
+    let numerator = (va * pb) + (vb * pa) + (total_vol >> 1);
+    FixedPrice((numerator / total_vol) as i64)
+}
