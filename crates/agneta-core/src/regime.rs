@@ -2,6 +2,18 @@ use crate::math::FixedQ32_32;
 use crate::types::FixedPrice;
 
 #[repr(u8)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Hash)]
+pub enum BookRegime {
+    #[default]
+    Normal = 0,
+    MagnetZoneUp = 1,
+    LimitUpLocked = 2,
+    MagnetZoneDown = 3,
+    LimitDownLocked = 4,
+    HaltedOrAuction = 5,
+}
+
+#[repr(u8)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum MarketBoard {
     SpecialTreatment = 0,
@@ -36,7 +48,6 @@ pub struct PriceBands {
     pub lower_limit: FixedPrice,
     pub upper_limit: FixedPrice,
 }
-
 
 impl PriceBands {
     #[inline(always)]
@@ -73,23 +84,29 @@ impl PriceBands {
     }
 
     #[inline(always)]
+    pub const fn normalized_distance_to_lower(self, current_price: FixedPrice) -> FixedQ32_32 {
+        let max_span = self.prev_close.0 - self.lower_limit.0;
+        if max_span <= 0 {
+            return FixedQ32_32::ONE;
+        }
+        let remaining = current_price.0 - self.lower_limit.0;
+        if remaining <= 0 {
+            return FixedQ32_32::ZERO;
+        }
+        if remaining >= max_span {
+            return FixedQ32_32::ONE;
+        }
+        let num = FixedQ32_32(remaining);
+        let den = FixedQ32_32(max_span);
+        num.checked_div(den)
+    }
+    
+    #[inline(always)]
     pub const fn is_above_longhubang_threshold(self, close_price: FixedPrice) -> bool {
         if self.prev_close.0 <= 0 {
             return false;
         }
         let diff = (close_price.0 - self.prev_close.0).abs();
-        // Déviation >= 7.00% (700 bps)
         (diff * 10_000) >= (self.prev_close.0 * 700)
     }
-}
-
-#[repr(u8)]
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
-pub enum BookRegime {
-    Normal = 0,
-    MagnetZoneUp = 1,
-    LimitUpLocked = 2,
-    MagnetZoneDown = 3,
-    LimitDownLocked = 4,
-    HaltedOrAuction = 5,
 }
